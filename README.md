@@ -44,13 +44,16 @@ echo $myNewCID
 - FalconClientSecret: Your Falcon API Client Secret
 - DockerAPIToken: Docker API Token generated for the Falcon CID to register EKS
 
-### Monitoring Stack
+### Optional Monitoring Stack
 - InstallPrometheus: Helm chart to run Prometheus on EKS for performance monitoring
 
 ### Optional Bastion Host
 - CreateBastion: Change to true to get a preconfigured Bastion with access to kubectl
 - KeyPairName: if CreateBastion=true then please provide valid Key Pair
 - RemoteAccessCIDR: if CreateBastion=true then please provide valid IP range for SSH
+
+### Optional Detection Container
+- InstallDetectionContainer: Rather or not to deploy the [detection container](https://github.com/CrowdStrike/detection-container) to the EKS cluster.
 
 ## Architecture
 
