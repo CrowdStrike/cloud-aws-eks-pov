@@ -85,7 +85,7 @@ Parameters:
   KeyPairName:
     Description: If CreateBastion = true, provide an existing Key Pair name for Ec2 Instance connection
     Type: String
-    Default: 'none'
+    Default: 'keyname'
   RemoteAccessCIDR:
     Description: If CreateBastion = true, the CIDR Range to allow SSH
     Type: String
@@ -166,12 +166,21 @@ Conditions:
     - Condition: EKSonFargate
 
 Resources:
+  EnvironmentID:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Join ['-', ['cs-pov-id', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]
+      Type: String
+      Value: !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]
+      Description: SSM Parameter to set ID for CrowdStrike POV Resources.
+
   IAMStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "https://${S3BucketName}.s3.amazonaws.com/iam.yaml"
       Parameters:
         EnvAlias: !Ref EnvAlias
+        EnvID: !GetAtt EnvironmentID.Value
         S3Bucket: !Ref S3BucketName
         PermissionsBoundary: !Ref PermissionsBoundary
 
@@ -192,6 +201,7 @@ Resources:
       TemplateURL:  !Sub 'https://${S3BucketName}.s3.amazonaws.com/eksControlPlane.yaml'
       Parameters:
         EnvAlias: !Ref EnvAlias
+        EnvID: !GetAtt EnvironmentID.Value
         PermissionsBoundary: !Ref PermissionsBoundary
         EKSAccessRole: !GetAtt IAMStack.Outputs.EKSAccessRoleName
         VPCID: !GetAtt VPCStack.Outputs.VPCIDOut
@@ -213,37 +223,6 @@ Resources:
         Subnet2: !GetAtt VPCStack.Outputs.PrivateSubnet2Out
         EksClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
         ClusterSecurityGroupId: !GetAtt EKSControlPlaneStack.Outputs.ClusterSecurityGroupId
-
-  # OperatorInstall:
-  #   Type: AWS::CloudFormation::Stack
-  #   Condition: EKSonEC2
-  #   DependsOn: EKSNodeGroupStack
-  #   Properties:
-  #     TemplateURL: !Sub "https://${S3BucketName}.s3.amazonaws.com/falconOperator.yaml"
-  #     Parameters:
-  #       EnvAlias: !Ref EnvAlias
-  #       EksClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
-  #       FalconSensorType: !Ref FalconSensorType
-  #       FalconClientID: !Ref FalconClientID
-  #       FalconClientSecret: !Ref FalconClientSecret
-  #       PermissionsBoundary: !Ref PermissionsBoundary
-  
-  # K8sProtectInstall:
-  #   Type: AWS::CloudFormation::Stack
-  #   Condition: EKSonEC2
-  #   DependsOn: EKSNodeGroupStack
-  #   Properties:
-  #     TemplateURL: !Sub "https://${S3BucketName}.s3.amazonaws.com/falconK8sProtect.yaml"
-  #     Parameters:
-  #       EnvAlias: !Ref EnvAlias
-  #       CrowdStrikeCloud: !Ref CrowdStrikeCloud
-  #       EksClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
-  #       EKSClusterArn: !GetAtt EKSControlPlaneStack.Outputs.EKSClusterArn
-  #       FalconClientID: !Ref FalconClientID
-  #       FalconClientSecret: !Ref FalconClientSecret
-  #       FalconCID: !Ref FalconCID
-  #       DockerAPIToken: !Ref DockerAPIToken
-  #       PermissionsBoundary: !Ref PermissionsBoundary
   
   PrometheusMonitorInstall:
     Type: AWS::CloudFormation::Stack
@@ -278,37 +257,6 @@ Resources:
         Subnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1Out
         Subnet2: !GetAtt VPCStack.Outputs.PrivateSubnet2Out
 
-  # OperatorInstallFargate:
-  #   Type: AWS::CloudFormation::Stack
-  #   Condition: EKSonFargate
-  #   DependsOn: FargateStack
-  #   Properties:
-  #     TemplateURL: !Sub "https://${S3BucketName}.s3.amazonaws.com/falconOperator.yaml"
-  #     Parameters:
-  #       EnvAlias: !Ref EnvAlias
-  #       EksClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
-  #       FalconSensorType: !Ref FalconSensorType
-  #       FalconClientID: !Ref FalconClientID
-  #       FalconClientSecret: !Ref FalconClientSecret
-  #       PermissionsBoundary: !Ref PermissionsBoundary
-  
-  # K8sProtectInstallFargate:
-  #   Type: AWS::CloudFormation::Stack
-  #   Condition: EKSonFargate
-  #   DependsOn: FargateStack
-  #   Properties:
-  #     TemplateURL: !Sub "https://${S3BucketName}.s3.amazonaws.com/falconK8sProtect.yaml"
-  #     Parameters:
-  #       EnvAlias: !Ref EnvAlias
-  #       CrowdStrikeCloud: !Ref CrowdStrikeCloud
-  #       EksClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
-  #       EKSClusterArn: !GetAtt EKSControlPlaneStack.Outputs.EKSClusterArn
-  #       FalconClientID: !Ref FalconClientID
-  #       FalconClientSecret: !Ref FalconClientSecret
-  #       FalconCID: !Ref FalconCID
-  #       DockerAPIToken: !Ref DockerAPIToken
-  #       PermissionsBoundary: !Ref PermissionsBoundary
-  
   PrometheusMonitorInstallFargate:
     Type: AWS::CloudFormation::Stack
     Condition: PrometheusFargate
