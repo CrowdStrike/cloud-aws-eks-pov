@@ -344,4 +344,4 @@ Resources:
         S3Bucket: !Ref S3BucketName
         DMZSubnetID: !GetAtt VPCStack.Outputs.DMZSubnet1Out
         ControlPlaneSecurityGroupId: !GetAtt EKSControlPlaneStack.Outputs.ControlPlaneSecurityGroupId
-        EnvironmentVariables: !Sub "CS_SENSOR_TYPE=${FalconSensorType}, K8S_CLUSTER_NAME=${EKSControlPlaneStack.Outputs.UniqueClusterName}, K8S_CA_DATA=${EKSControlPlaneStack.Outputs.CAData}, K8S_VERSION=${KubernetesVersion}, K8S_ENDPOINT=${EKSControlPlaneStack.Outputs.EKSEndpoint}"
+        EnvironmentVariables: !Sub "CS_CLIENT_ID=${FalconClientID}, CS_CLIENT_SECRET=${FalconClientSecret}, CS_ENV=${CrowdStrikeCloud}, CS_CID=${FalconCID}, DOCKER_API_TOKEN=${DockerAPIToken}, CS_SENSOR_TYPE=${FalconSensorType}, K8S_CLUSTER_NAME=${EKSControlPlaneStack.Outputs.UniqueClusterName}, K8S_CA_DATA=${EKSControlPlaneStack.Outputs.CAData}, K8S_VERSION=${KubernetesVersion}, K8S_ENDPOINT=${EKSControlPlaneStack.Outputs.EKSEndpoint}"

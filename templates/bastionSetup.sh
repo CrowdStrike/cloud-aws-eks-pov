@@ -78,7 +78,9 @@ EOF
 }
 
 function install_operator(){
-  kubectl apply -f https://raw.githubusercontent.com/CrowdStrike/falcon-operator/main/deploy/falcon-operator.yaml
+  printf "\nInstalling Operator...\n"
+  wget https://raw.githubusercontent.com/CrowdStrike/falcon-operator/main/deploy/falcon-operator.yaml -P /tmp/
+  kubectl apply --kubeconfig /home/ec2-user/.kube/config -f /tmp/falcon-operator.yaml
 }
 
 function install_nodesensor(){
@@ -97,7 +99,8 @@ spec:
     tags: 
     - DevDays-CNAP
 EOF
-    kubectl create -f /tmp/node_sensor.yaml
+    printf "\nInstalling Node Sensor...\n"
+    kubectl create --kubeconfig /home/ec2-user/.kube/config -f /tmp/node_sensor.yaml
 }
 
 function install_containersensor(){
@@ -117,6 +120,7 @@ spec:
     - '-falconctl-opts'
     - '--tags=DevDays-CNAP'
 EOF
+    printf "\nInstalling Container Sensor...\n"
     kubectl create -f /tmp/container_sensor.yaml
 }
 
@@ -130,8 +134,9 @@ crowdstrikeConfig:
   cid: ${CS_CID}
   dockerAPIToken: ${DOCKER_API_TOKEN}
 EOF
-    printf "\nAdd Repo\n"
+    printf "\nAdd kpagent Repo\n"
     helm repo add kpagent-helm https://registry.crowdstrike.com/kpagent-helm && helm repo update
+    printf "\nInstalling K8S Protection Agent...\n"
     helm upgrade --install -f /tmp/k8s_agent_config.yaml --kubeconfig /home/ec2-user/.kube/config --create-namespace -n falcon-kubernetes-protection kpagent kpagent-helm/cs-k8s-protection-agent
 }
 
