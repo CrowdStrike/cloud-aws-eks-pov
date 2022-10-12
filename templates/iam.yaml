@@ -45,7 +45,7 @@ Resources:
                 Action:
                   - "eks:CreateCLuster"
                   - "eks:DeleteCluster"
-                Resource: !Sub "arn:${AWS::Partition}:eks:${AWS::Region}:${AWS::AccountId}:cluster/${EnvAlias}-EKS-Cluster"
+                Resource: !Sub "arn:${AWS::Partition}:eks:${AWS::Region}:${AWS::AccountId}:cluster/*"
               - Effect: Allow
                 Action:
                   - "eks:Describe*"

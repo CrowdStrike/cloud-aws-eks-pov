@@ -68,7 +68,7 @@ Resources:
         config:
           ignore_checks: [ E3001 ]
     Properties:
-      Name: !Sub '${EnvAlias}-EKS-Cluster'
+      Name: !Join ['-', [!Ref EnvAlias,'EKS-Cluster', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]
       ResourcesVpcConfig:
         EndpointPrivateAccess: true
         EndpointPublicAccess: true
