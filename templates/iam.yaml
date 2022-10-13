@@ -117,7 +117,18 @@ Resources:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore'
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy'
-
+        
+  ApplyResourceActivation:
+    Type: AWS::CloudFormation::TypeActivation
+    Properties:
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      LoggingConfig:
+        LogGroupName: cloudformation/registry/awsqs-kubernetes-resource
+        LogRoleArn: !GetAtt ExecutionRole.Arn
+      PublicTypeArn: !Sub arn:aws:cloudformation:${AWS::Region}::type/resource/408988dff9e863704bcc72e7e13f8d645cee8311/AWSQS-Kubernetes-Resource
+      Type: RESOURCE
+      TypeName: AWSQS::Kubernetes::ResourcePov
+      TypeNameAlias: AWSQS::Kubernetes::ResourcePov
   ClusterResourceActivation:
       Type: AWS::CloudFormation::TypeActivation
       Properties:
