@@ -100,7 +100,7 @@ spec:
     - DevDays-CNAP
 EOF
     printf "\nInstalling Node Sensor...\n"
-    kubectl create --kubeconfig /home/ec2-user/.kube/config -f /tmp/node_sensor.yaml
+    kubectl apply --kubeconfig /home/ec2-user/.kube/config -f /tmp/node_sensor.yaml
 }
 
 function install_containersensor(){
@@ -121,7 +121,7 @@ spec:
     - '--tags=DevDays-CNAP'
 EOF
     printf "\nInstalling Container Sensor...\n"
-    kubectl create -f /tmp/container_sensor.yaml
+    kubectl apply --kubeconfig /home/ec2-user/.kube/config -f /tmp/container_sensor.yaml
 }
 
 function install_k8s_agent(){
@@ -140,15 +140,59 @@ EOF
     helm upgrade --install -f /tmp/k8s_agent_config.yaml --kubeconfig /home/ec2-user/.kube/config --create-namespace -n falcon-kubernetes-protection kpagent kpagent-helm/cs-k8s-protection-agent
 }
 
+function deploy_detection_container(){
+    cat >/tmp/detection_container.yaml <<EOF
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: detection-container
+  labels:
+    name: detection-container
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: detection-container
+  namespace: detection-container
+  labels:
+    app: detection-container
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: detection-container
+  template:
+    metadata:
+      labels:
+        app: detection-container
+    spec:
+      containers:
+      - name: detection-container
+        image: quay.io/crowdstrike/detection-container
+        imagePullPolicy: Always
+EOF
+    printf "\nDeploy Detection Container...\n"
+    kubectl apply --kubeconfig /home/ec2-user/.kube/config -f /tmp/detection_container.yaml
+}
+
 
 setup_environment_variables
 install_kubernetes_client_tools
 setup_kubeconfig
 install_operator
+
 if [[ $CS_SENSOR_TYPE = "FalconNodeSensor" ]]
 then
   install_nodesensor
 else
   install_containersensor
 fi
+
 install_k8s_agent
+
+if [[ $DETECTION_CONTAINER = "true" ]]
+then
+  deploy_detection_container
+fi

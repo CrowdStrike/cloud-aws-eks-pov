@@ -150,20 +150,14 @@ Metadata:
 
 Conditions:
   InstallPrometheus: !Equals [ !Ref InstallPrometheus, 'true' ]
-  CreateBastionTrue: !Equals [ !Ref CreateBastion, 'true' ]
+  CreateBastion: !Equals [ !Ref CreateBastion, 'true' ]
   EKSonEC2: !Not [ !Equals [ !Ref EC2orFargate, 'Fargate' ] ]
   EKSonFargate: !Equals [ !Ref EC2orFargate, 'Fargate' ]
-  InstallDetectionContainer: !Equals [ !Ref InstallDetectionContainer, 'true' ]
-  DetectionContainerOnEC2: !And [ !Condition EKSonEC2, !Condition InstallDetectionContainer ]
-  DetectionContainerOnFargate: !And [ !Condition EKSonFargate, !Condition InstallDetectionContainer ]
-  PrometheusEc2:
-    Fn::And:
-    - Condition: InstallPrometheus
-    - Condition: EKSonEC2
-  PrometheusFargate:
-    Fn::And:
-    - Condition: InstallPrometheus
-    - Condition: EKSonFargate
+  PrometheusEc2: !And [ !Condition EKSonEC2, !Condition InstallPrometheus ]
+  PrometheusFargate: !And [ !Condition EKSonFargate, !Condition InstallPrometheus ]
+  BastionEC2: !And [ !Condition EKSonEC2, !Condition CreateBastion ]
+  BastionFargate: !And [ !Condition EKSonFargate, !Condition CreateBastion ]
+  
 
 Resources:
   EnvironmentID:
@@ -234,14 +228,23 @@ Resources:
         EKSClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
         PermissionsBoundary: !Ref PermissionsBoundary
   
-  DetectionContainerInstall:
-    Type: AWS::CloudFormation::Stack
-    Condition: DetectionContainerOnEC2
+  BastionStackNodeGroup:    
+    Condition: BastionEC2
     DependsOn: EKSNodeGroupStack
+    Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub "https://${S3BucketName}.s3.amazonaws.com/detectionContainer.yaml"
+      TemplateURL: !Sub 'https://${S3BucketName}.s3.amazonaws.com/bastion.yaml'
       Parameters:
-        EKSClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
+        EnvAlias: !Ref EnvAlias
+        KeyPairName: !Ref KeyPairName
+        RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        BastionRole: !GetAtt IAMStack.Outputs.EKSAccessRoleName
+        VPCID: !GetAtt VPCStack.Outputs.VPCIDOut
+        VPCCIDR: !Ref NewVPCCIDR
+        S3Bucket: !Ref S3BucketName
+        DMZSubnetID: !GetAtt VPCStack.Outputs.DMZSubnet1Out
+        ControlPlaneSecurityGroupId: !GetAtt EKSControlPlaneStack.Outputs.ControlPlaneSecurityGroupId
+        EnvironmentVariables: !Sub "DETECTION_CONTAINER=${InstallDetectionContainer}, CS_CLIENT_ID=${FalconClientID}, CS_CLIENT_SECRET=${FalconClientSecret}, CS_ENV=${CrowdStrikeCloud}, CS_CID=${FalconCID}, DOCKER_API_TOKEN=${DockerAPIToken}, CS_SENSOR_TYPE=${FalconSensorType}, K8S_CLUSTER_NAME=${EKSControlPlaneStack.Outputs.UniqueClusterName}, K8S_CA_DATA=${EKSControlPlaneStack.Outputs.CAData}, K8S_VERSION=${KubernetesVersion}, K8S_ENDPOINT=${EKSControlPlaneStack.Outputs.EKSEndpoint}"
 
 # EKS on Fargate Only
   FargateStack:
@@ -266,19 +269,10 @@ Resources:
       Parameters:
         EKSClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
         PermissionsBoundary: !Ref PermissionsBoundary
-  
-  DetectionContainerInstallFargate:
-    Type: AWS::CloudFormation::Stack
-    Condition: DetectionContainerOnFargate
-    DependsOn: FargateStack
-    Properties:
-      TemplateURL: !Sub "https://${S3BucketName}.s3.amazonaws.com/detectionContainer.yaml"
-      Parameters:
-        EKSClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
 
-# Optional Bastion
-  BastionStack:
-    Condition: CreateBastionTrue
+  BastionStackFargate:    
+    Condition: BastionFargate
+    DependsOn: FargateStack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'https://${S3BucketName}.s3.amazonaws.com/bastion.yaml'
@@ -292,4 +286,4 @@ Resources:
         S3Bucket: !Ref S3BucketName
         DMZSubnetID: !GetAtt VPCStack.Outputs.DMZSubnet1Out
         ControlPlaneSecurityGroupId: !GetAtt EKSControlPlaneStack.Outputs.ControlPlaneSecurityGroupId
-        EnvironmentVariables: !Sub "CS_CLIENT_ID=${FalconClientID}, CS_CLIENT_SECRET=${FalconClientSecret}, CS_ENV=${CrowdStrikeCloud}, CS_CID=${FalconCID}, DOCKER_API_TOKEN=${DockerAPIToken}, CS_SENSOR_TYPE=${FalconSensorType}, K8S_CLUSTER_NAME=${EKSControlPlaneStack.Outputs.UniqueClusterName}, K8S_CA_DATA=${EKSControlPlaneStack.Outputs.CAData}, K8S_VERSION=${KubernetesVersion}, K8S_ENDPOINT=${EKSControlPlaneStack.Outputs.EKSEndpoint}"
+        EnvironmentVariables: !Sub "DETECTION_CONTAINER=${InstallDetectionContainer}, CS_CLIENT_ID=${FalconClientID}, CS_CLIENT_SECRET=${FalconClientSecret}, CS_ENV=${CrowdStrikeCloud}, CS_CID=${FalconCID}, DOCKER_API_TOKEN=${DockerAPIToken}, CS_SENSOR_TYPE=${FalconSensorType}, K8S_CLUSTER_NAME=${EKSControlPlaneStack.Outputs.UniqueClusterName}, K8S_CA_DATA=${EKSControlPlaneStack.Outputs.CAData}, K8S_VERSION=${KubernetesVersion}, K8S_ENDPOINT=${EKSControlPlaneStack.Outputs.EKSEndpoint}"
