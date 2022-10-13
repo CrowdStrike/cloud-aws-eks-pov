@@ -121,7 +121,7 @@ Resources:
   NodeInstanceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: "${EnvAlias}-node-role-${EnvID}"
+      RoleName: !Sub "${EnvAlias}-node-role-${EnvID}"
       PermissionsBoundary:
         Fn::If:
           - PermissionsBoundary

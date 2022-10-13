@@ -163,7 +163,7 @@ Resources:
   EnvironmentID:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Join ['-', ['cs-pov-id', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]
+      Name: !Join ['-', [!Ref EnvAlias, 'pov-id', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]
       Type: String
       Value: !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]
       Description: SSM Parameter to set ID for CrowdStrike POV Resources.
