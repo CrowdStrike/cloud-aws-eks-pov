@@ -185,6 +185,7 @@ Resources:
       TemplateURL: !Sub "https://${S3BucketName}.s3.amazonaws.com/vpc.yaml"
       Parameters:
         EnvAlias: !Ref EnvAlias
+        EnvID: !GetAtt EnvironmentID.Value
         PermissionsBoundary: !Ref PermissionsBoundary
         NewVPCCIDR: !Ref NewVPCCIDR
   
@@ -212,6 +213,7 @@ Resources:
       TemplateURL:  !Sub 'https://${S3BucketName}.s3.amazonaws.com/eksNodeGroup.yaml'
       Parameters:
         EnvAlias: !Ref EnvAlias
+        EnvID: !GetAtt EnvironmentID.Value
         PermissionsBoundary: !Ref PermissionsBoundary
         Subnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1Out
         Subnet2: !GetAtt VPCStack.Outputs.PrivateSubnet2Out
@@ -236,6 +238,7 @@ Resources:
       TemplateURL: !Sub 'https://${S3BucketName}.s3.amazonaws.com/bastion.yaml'
       Parameters:
         EnvAlias: !Ref EnvAlias
+        EnvID: !GetAtt EnvironmentID.Value
         KeyPairName: !Ref KeyPairName
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
         BastionRole: !GetAtt IAMStack.Outputs.EKSAccessRoleName
@@ -256,6 +259,7 @@ Resources:
       Parameters:
         PermissionsBoundary: !Ref PermissionsBoundary
         EnvAlias: !Ref EnvAlias
+        EnvID: !GetAtt EnvironmentID.Value
         ClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
         Subnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1Out
         Subnet2: !GetAtt VPCStack.Outputs.PrivateSubnet2Out
@@ -278,6 +282,7 @@ Resources:
       TemplateURL: !Sub 'https://${S3BucketName}.s3.amazonaws.com/bastion.yaml'
       Parameters:
         EnvAlias: !Ref EnvAlias
+        EnvID: !GetAtt EnvironmentID.Value
         KeyPairName: !Ref KeyPairName
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
         BastionRole: !GetAtt IAMStack.Outputs.EKSAccessRoleName
