@@ -64,7 +64,7 @@ Resources:
         - ResourceType: instance
           Tags:
           - Key: Name
-            Value: k8s-cs-pov-node
+            Value: !Sub "${EnvAlias}-node-${EnvID}"
           - Key: alpha.eksctl.io/nodegroup-name
             Value: !Sub "${EnvAlias}-ng-${EnvID}"
           - Key: alpha.eksctl.io/nodegroup-type
@@ -72,7 +72,7 @@ Resources:
         - ResourceType: volume
           Tags:
           - Key: Name
-            Value: k8s-cs-pov-node
+            Value: !Sub "${EnvAlias}-node-${EnvID}"
           - Key: alpha.eksctl.io/nodegroup-name
             Value: !Sub "${EnvAlias}-ng-${EnvID}"
           - Key: alpha.eksctl.io/nodegroup-type
@@ -80,7 +80,7 @@ Resources:
         - ResourceType: network-interface
           Tags:
           - Key: Name
-            Value: k8s-cs-pov-node
+            Value: !Sub "${EnvAlias}-node-${EnvID}"
           - Key: alpha.eksctl.io/nodegroup-name
             Value: !Sub "${EnvAlias}-ng-${EnvID}"
           - Key: alpha.eksctl.io/nodegroup-type
