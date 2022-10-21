@@ -82,6 +82,7 @@ Resources:
             Value: kube-dns
 
   PrometheusProfile:
+    DependsOn: CoreDNSFargateProfile
     Type: 'AWS::EKS::FargateProfile'
     Properties:
       FargateProfileName: !Sub "${EnvAlias}-fargate-prometheus-${EnvID}"
