@@ -86,6 +86,7 @@ function patch_coredns(){
     -p='[{"op": "remove", "path": "/spec/template/metadata/annotations/eks.amazonaws.com~1compute-type"}]'
   kubectl rollout restart --kubeconfig /home/ec2-user/.kube/config -n kube-system deployment coredns
 }
+
 function install_operator(){
   printf "\nInstalling Operator...\n"
   wget https://raw.githubusercontent.com/CrowdStrike/falcon-operator/main/deploy/falcon-operator.yaml -P /tmp/
@@ -197,6 +198,7 @@ then
 fi
 
 sleep 20
+
 install_operator
 
 if [[ $CS_SENSOR_TYPE = "FalconNodeSensor" ]]
