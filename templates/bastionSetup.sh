@@ -77,6 +77,14 @@ EOF
     chown -R ssm-user:ssm-user /home/ssm-user/.kube/
 }
 
+function patch_coredns(){
+  printf "\nPatching CoreDNS Pods...\n"
+  kubectl patch deployment coredns \
+    -n kube-system \
+    --type json \
+    -p='[{"op": "remove", "path": "/spec/template/metadata/annotations/eks.amazonaws.com~1compute-type"}]'
+  kubectl rollout restart -n kube-system deployment coredns
+}
 function install_operator(){
   printf "\nInstalling Operator...\n"
   wget https://raw.githubusercontent.com/CrowdStrike/falcon-operator/main/deploy/falcon-operator.yaml -P /tmp/
@@ -181,6 +189,12 @@ EOF
 setup_environment_variables
 install_kubernetes_client_tools
 setup_kubeconfig
+
+if [[ $EC2_OR_FARGATE = "Fargate" ]]
+then
+  patch_coredns
+fi
+
 install_operator
 
 if [[ $CS_SENSOR_TYPE = "FalconNodeSensor" ]]
