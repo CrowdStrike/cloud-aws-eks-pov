@@ -196,6 +196,7 @@ then
   patch_coredns
 fi
 
+sleep 20
 install_operator
 
 if [[ $CS_SENSOR_TYPE = "FalconNodeSensor" ]]
