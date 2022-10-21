@@ -80,10 +80,11 @@ EOF
 function patch_coredns(){
   printf "\nPatching CoreDNS Pods...\n"
   kubectl patch deployment coredns \
+    --kubeconfig /home/ec2-user/.kube/config \
     -n kube-system \
     --type json \
     -p='[{"op": "remove", "path": "/spec/template/metadata/annotations/eks.amazonaws.com~1compute-type"}]'
-  kubectl rollout restart -n kube-system deployment coredns
+  kubectl rollout restart --kubeconfig /home/ec2-user/.kube/config -n kube-system deployment coredns
 }
 function install_operator(){
   printf "\nInstalling Operator...\n"
