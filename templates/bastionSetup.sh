@@ -97,7 +97,7 @@ spec:
   node: {}
   falcon:
     tags: 
-    - DevDays-CNAP
+    - cs-pov
 EOF
     printf "\nInstalling Node Sensor...\n"
     kubectl apply --kubeconfig /home/ec2-user/.kube/config -f /tmp/node_sensor.yaml
@@ -117,8 +117,8 @@ spec:
   registry:
     type: crowdstrike
   installer_args:
-    - '-falconctl-opts'
-    - '--tags=DevDays-CNAP'
+    - -falconctl-opts
+    - --tags=cs-pov
 EOF
     printf "\nInstalling Container Sensor...\n"
     kubectl apply --kubeconfig /home/ec2-user/.kube/config -f /tmp/container_sensor.yaml
