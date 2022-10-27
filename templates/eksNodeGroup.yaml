@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'EKS Managed Nodes (SSH access: false) [created by eksctl]'
+Description: 'EKS Managed Nodes'
 
 Parameters:
   EnvAlias:
